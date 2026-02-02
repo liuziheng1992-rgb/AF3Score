@@ -1,0 +1,21 @@
+input_pdb_dir= #需要添加目录
+
+
+# ============================== Seed 大循环 (10 到 100) ==============================
+for SEED in {10..100..10}; do
+    echo "============================================================"
+    echo "正在启动 SEED = $SEED 的全量推理任务"
+    echo "============================================================"
+
+    # 1. 修改 JSON 文件中的 modelSeeds
+    # 使用 Python 一键修改所有 JSON，确保格式和数值准确
+    echo "修改 JSON 文件中的 seed 为 $SEED..."
+
+    # 2. 设置当前 Seed 的输出根目录
+    CURRENT_SEED_OUTPUT="$BASE_REPO/xfold_inference/example/output_npu_${SEED}" #需要修改路径
+
+    # Usage: AF3score_pipeline.sh <input_pdb_dir> <output_dir> <num_jobs>
+    bash AF3score_pipeline.sh $input_pdb_dir $CURRENT_SEED_OUTPUT 1 $SEED
+
+
+done
