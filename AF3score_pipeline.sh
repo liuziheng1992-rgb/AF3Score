@@ -15,19 +15,20 @@ source "${pipeline_script_dir}/functions.sh"
 # ============================== Argument Parsing ==============================
 usage() {
     cat <<EOF
-Usage: $0 <input_pdb_dir> <output_dir> <num_jobs>
+Usage: $0 <input_pdb_dir> <output_dir> <num_jobs> <seed>
 
 Example:
-  $0 /data/pdbs /output/af3score 50
+  $0 /data/pdbs /output/af3score 50 10
 EOF
   exit 1
 }
 
-[[ $# -ge 3 ]] || usage
+[[ $# -ge 4 ]] || usage
 
 input_pdb_dir="$(realpath "$1")"
 output_dir="$(realpath "$2")"
 num_jobs="$3"
+cur_seed="$4"
 
 # ============================== Initialization ==============================
 log_info "========== AF3score Pipeline started =========="
@@ -35,6 +36,7 @@ log_info "Input PDB dir   : $input_pdb_dir"
 log_info "Output dir      : $output_dir"
 log_info "Batch size      : $num_jobs"
 log_info "SLURM partition : $slurm_partition"
+log_info "SEED IDX : $cur_seed"
 [[ -n "$slurm_nodelist" ]] && log_info "Node list       : $slurm_nodelist"
 
 start_time=$(date +%s)
@@ -66,7 +68,8 @@ log_info "Preparing AF3score inputs: extracting sequences, creating JSON files, 
 --save_csv "$save_csv" \
 --output_dir_json "$output_dir_json" \
 --batch_dir "$af3_input_batch" \
---num_jobs "$num_jobs"
+--num_jobs "$num_jobs" \
+--current_seed "$cur_seed"
 
 # --- Submitting prepare_jax jobs ---
 log_info "Submitting prepare_jax jobs to convert PDBs to H5 format..."
