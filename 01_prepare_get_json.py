@@ -154,7 +154,7 @@ def process_single_pdb(args):
 
 def generate_json_files(tasks):
     """Generate AlphaFold3 formatted JSON input files from sequence data."""
-    row, cif_dir, output_dir = tasks
+    row, cif_dir, output_dir, seed = tasks
     complex_name = row["complex"]
     chain_sequences = get_chain_sequences_from_row(row)
 
@@ -200,7 +200,7 @@ def generate_json_files(tasks):
         "version": 1,
         "name": complex_name,
         "sequences": sequences,
-        "modelSeeds": [10],
+        "modelSeeds": [int(seed)],
         "bondedAtomPairs": None,
         "userCCD": None,
     }
@@ -234,6 +234,7 @@ def get_seq_main():
         default=None,
         help="Number of batch groups to create",
     )
+    parser.add_argument("--current_seed", type=int, default=None)
     args = parser.parse_args()
 
     # Environment Setup
@@ -241,6 +242,7 @@ def get_seq_main():
         args.num_workers if args.num_workers else mp.cpu_count() - 4
     )
     num_jobs = args.num_jobs
+    seed = args.current_seed
     os.makedirs(args.output_dir_cif, exist_ok=True)
     os.makedirs(args.output_dir_json, exist_ok=True)
 
@@ -300,7 +302,7 @@ def get_seq_main():
 
     # Phase 2: Parallel JSON Generation
     json_tasks = [
-        (r, args.output_dir_cif, args.output_dir_json)
+        (r, args.output_dir_cif, args.output_dir_json, args.current_seed)
         for _, r in df.iterrows()
     ]
     with mp.Pool(processes=num_workers) as pool:
